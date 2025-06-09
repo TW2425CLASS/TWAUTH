@@ -3,8 +3,13 @@
 
 <head>
     <title>Protected Page</title>
+    <style>
+       body {
+       background-color : <%= color %>;
+       }
+    </style>
 </head>
-<body style="background-color: <%= color %>">
+<body>
     <h1>Welcome, <%= nick %> ! </h1>
     <p>This is a protected page.</p>
     <a href="/logout">Logout</a>
