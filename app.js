@@ -15,8 +15,9 @@ app.use(express.urlencoded());
 app.use(express.static('public'));
 app.use(session({ secret: "12345" }));
 
-//app.set('view engine', 'ejs');
-//app.set('views','views');
+// configurar render engine de templates
+app.set('view engine', 'ejs');
+app.set('views','views');
 
 app.post('/login', (req, res) => {
     dadoslogin = req.body;
@@ -37,14 +38,13 @@ app.post('/login', (req, res) => {
 
 app.get('/protected', (req, res) => {
     if (req.session.user) {
-        res.send("isto está protegido " + req.session.user);
-        //res.render('viewprotected', { username: req.session.user });
+        //res.send("isto está protegido " + req.session.user);
+        res.render('viewprotected', { username: req.session.user });
 
     } else {
         res.redirect('/login.html');
     }
 });
-
 
 app.listen(PORT, () => {
     console.log("o servidor está a funcionar na porta : " + PORT);
