@@ -22,12 +22,24 @@ app.post('/login', (req, res) => {
     if (user && user.password === dadoslogin.password) {
         // login com sucesso
         req.session.user = user.username;
+        console.log("sucesso")
         res.redirect('/protected');
+
     } else {
         // falhou login
+        console.log("insucesso");
         res.redirect('/login.html')
     }
-})
+});
+
+app.get('/protected', (req, res) => {
+    if (req.session.user) {
+        res.send("isto está protegido" + req.session.user);
+    } else {
+        res.redirect('/login.html');
+    }
+});
+
 
 app.listen(PORT, () => {
     console.log("o servidor está a funcionar na porta : " + PORT);
