@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require('express-session')
 const PORT = 3000;
 
 //simular base de dados de utilizadores
@@ -10,14 +11,22 @@ bdusers = [
 
 const app = new express();
 app.use(express.urlencoded());
-
 app.use(express.static('public'));
+app.use(session({ secret: "12345" }));
+
 
 app.post('/login', (req, res) => {
     dadoslogin = req.body;
     console.log(dadoslogin);
     const user = bdusers.find((element) => element.username === dadoslogin.username)
-    console.log(user);
+    if (user && user.password === dadoslogin.password) {
+        // login com sucesso
+        req.session.user = user.username;
+        res.redirect('/protected');
+    } else {
+        // falhou login
+        res.redirect('/login.html')
+    }
 })
 
 app.listen(PORT, () => {
