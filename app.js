@@ -3,7 +3,6 @@ const session = require('express-session');
 const dotenv = require('dotenv');
 const {MongoClient, ObjectId} = require('mongodb');
 
-
 dotenv.config(); // Carrega variáveis de ambiente do ficheiro .env
 
 // todo: declarar como variavel de ambiente (.env)
@@ -16,6 +15,7 @@ const PORT = process.env.PORT || 3000;
 const SECRET = process.env.SESSION_SECRET || "12345";
 
 
+/****** 
 //simular base de dados de utilizadores
 // todo : migrar pata bd mongo (ou outra)
 // todo : não armazenar passwords em texto simples => usar hash function
@@ -23,6 +23,7 @@ bdusers = [
     { username: "pedro", password: "12345", nick: "pedrão", color:"yellow"},
     { username: "paulo", password: "54321" , nick : "paulinho", color:"lightblue"},
     ];
+***/
 
 const app = new express();                  // nova app
 app.use(express.urlencoded());              // extrai dados urlencoded dos pedidos
@@ -68,7 +69,6 @@ app.post('/login', async (req, res) => {
             res.redirect('/login.html');
         }
     }
-
 
     // verificar se o utilizador existe na base de dados simulada
     /*
