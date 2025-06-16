@@ -1,39 +1,47 @@
 const express = require('express');
-const session = require('express-session')
+const session = require('express-session');
+const dotenv = require('dotenv');
 
-const PORT = 3000;
+dotenv.config(); // Carrega variáveis de ambiente do ficheiro .env
+
+// todo: declarar como variavel de ambiente (.env)
+//const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+
+
+// todo: declarar como variavel de ambiente (.env)
+// const SECRET = "12345"
+const SECRET = process.env.SESSION_SECRET || "12345";
+
 
 //simular base de dados de utilizadores
-
+// todo : migrar pata bd mongo (ou outra)
+// todo : não armazenar passwords em texto simples => usar hash function
 bdusers = [
     { username: "pedro", password: "12345", nick: "pedrão", color:"yellow"},
     { username: "paulo", password: "54321" , nick : "paulinho", color:"lightblue"},
     ];
 
-const app = new express();
-app.use(express.urlencoded());
-app.use(express.static('public'));
-app.use(session({ secret: "12345" }));
+const app = new express();                  // nova app
+app.use(express.urlencoded());              // extrai dados urlencoded dos pedidos
+app.use(express.static('public'));          // pasta static para servidor estático
+app.use(session({ secret: SECRET, resave: false, saveUninitialized : false }));       // 
 
 // configurar render engine de templates
-app.set('view engine', 'ejs');
-app.set('views', 'views');
+app.set('view engine', 'ejs');              // define ejs como template engine
+app.set('views', 'views');                  // pasta views para templates.ejs
 
 
 // middleware de verificação de autenticação
-
 function estaAutenticado(req, res, next) {
-    if (req.session.user) {
-        next();
+    if (req.session.user) {                 // se está autenticado
+        next();                             // continua para o próximo
     } else {
-        res.redirect('/login.html')
+        res.redirect('/login.html')         // senão redireciona para login.html
     }
 }
 
-app.get('/ola', estaAutenticado ,(req, res) => {
-    res.send("ola" +  " " + req.session.user)
-})
-    
+// login
 app.post('/login', (req, res) => {
     dadoslogin = req.body;
     console.log(dadoslogin);
@@ -53,15 +61,23 @@ app.post('/login', (req, res) => {
     }
 });
 
-app.get('/protected', estaAutenticado,(req, res) => {
-        res.render('viewprotected', { nick: req.session.nick , color: req.session.color});
-});
-
+// logout
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');
 })
 
+// exemplo de rotas com middlewarewa de autenticação
+app.get('/ola', estaAutenticado ,(req, res) => {
+    res.send("ola" +  " " + req.session.user)  
+})
+
+app.get('/protected', estaAutenticado,(req, res) => {
+        res.render('viewprotected', { nick: req.session.nick , color: req.session.color});
+});
+
+
+// liga servidor
 app.listen(PORT, () => {
     console.log("o servidor está a funcionar na porta : " + PORT);
 })
