@@ -1,6 +1,8 @@
 const express = require('express');
 const session = require('express-session');
 const dotenv = require('dotenv');
+const {MongoClient, ObjectId} = require('mongodb');
+
 
 dotenv.config(); // Carrega variáveis de ambiente do ficheiro .env
 
@@ -42,9 +44,34 @@ function estaAutenticado(req, res, next) {
 }
 
 // login
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
     dadoslogin = req.body;
     console.log(dadoslogin);
+
+    // verificar se o utilizador existe na base de dados mongodb
+
+    user = await usersCollection.findOne({ username: dadoslogin.username });
+    console.log(user);
+
+    if (user) {
+        // se o utilizador existe, verificar a password
+        if (user.password === dadoslogin.password) {
+            // login com sucesso
+            req.session.user = user.username;
+            req.session.nick = user.nick;
+            req.session.color = user.color;
+            console.log("sucesso");
+            res.redirect('/protected');
+        } else {
+            // falhou login
+            console.log("insucesso: password incorreta");
+            res.redirect('/login.html');
+        }
+    }
+
+
+    // verificar se o utilizador existe na base de dados simulada
+    /*
     const user = bdusers.find((element) => element.username === dadoslogin.username)
     if (user && user.password === dadoslogin.password) {
         // login com sucesso
@@ -53,12 +80,12 @@ app.post('/login', (req, res) => {
         req.session.color = user.color;
         console.log("sucesso")
         res.redirect('/protected');
-
-    } else {
+    }
+        else {
         // falhou login
         console.log("insucesso");
         res.redirect('/login.html')
-    }
+    } */
 });
 
 // logout
@@ -76,9 +103,32 @@ app.get('/protected', estaAutenticado,(req, res) => {
         res.render('viewprotected', { nick: req.session.nick , color: req.session.color});
 });
 
+let db;
+let usersCollection;
 
-// liga servidor
-app.listen(PORT, () => {
-    console.log("o servidor está a funcionar na porta : " + PORT);
-})
+// liga bd e servidor
+async function startServer() {
+    try {
+        // Conectar ao MongoDB
 
+        console.log(process.env.MONGOURL)
+        const client = new MongoClient(process.env.MONGOURL);
+
+        await client.connect();
+
+        db = client.db('usersdb');
+        usersCollection = db.collection('users');
+
+
+        console.log("Conectado ao MongoDB");
+        // Iniciar o servidor Express
+        // liga servidor
+        app.listen(PORT, () => {
+            console.log("o servidor está a funcionar na porta : " + PORT);
+            })
+    } catch (error) {
+        console.error("Erro ao inicializar:", error);
+    }
+}
+
+startServer()
